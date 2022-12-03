@@ -16,19 +16,35 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private final Integer MAX_MOVES = 9;
-    private final Integer O_PLAYER = 0;
-    private final Integer X_PLAYER = 1;
+    private final Integer PLAYER_O = 0;
+    private final Integer PLAYER_X = 1;
     private final List<ImageView> boardCells = new ArrayList();
     private final CellPosition[] gameState = new CellPosition[this.MAX_MOVES];
-    private final Integer[] cellIDs = {R.id.board_cell1, R.id.board_cell2, R.id.board_cell3,
-            R.id.board_cell4, R.id.board_cell5, R.id.board_cell6, R.id.board_cell7,
-            R.id.board_cell8, R.id.board_cell9};
-    private final Integer[] winsSituations = {R.drawable.high, R.drawable.horizontal, R.drawable.low,
-            R.drawable.left, R.drawable.vertical, R.drawable.right,
-            R.drawable.slashwin, R.drawable.backslashwin};
-    private final Integer[][] winPositions = {{0, 1, 2}, {3, 4, 5}, {6, 7, 8},
-            {0, 3, 6}, {1, 4, 7}, {2, 5, 8},
-            {0, 4, 8}, {2, 4, 6}};
+    private final Integer[] cellIDs = {R.id.board_cell1,
+            R.id.board_cell2,
+            R.id.board_cell3,
+            R.id.board_cell4,
+            R.id.board_cell5,
+            R.id.board_cell6,
+            R.id.board_cell7,
+            R.id.board_cell8,
+            R.id.board_cell9};
+    private final Integer[] winsSituationsImages = {R.drawable.high,
+            R.drawable.horizontal,
+            R.drawable.low,
+            R.drawable.left,
+            R.drawable.vertical,
+            R.drawable.right,
+            R.drawable.slashwin,
+            R.drawable.backslashwin};
+    private final Integer[][] winSituationsOnBoard = {{0, 1, 2},
+            {3, 4, 5},
+            {6, 7, 8},
+            {0, 3, 6},
+            {1, 4, 7},
+            {2, 5, 8},
+            {0, 4, 8},
+            {2, 4, 6}};
     private boolean isGameActive = false;
     private Integer movesCounter;
     private Integer activePlayer;
@@ -40,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.activePlayer = X_PLAYER;
+        this.activePlayer = PLAYER_X;
         this.playerMessage = findViewById(R.id.board_player_message);
         this.playerMessage.setVisibility(View.INVISIBLE);
         this.winStrike = findViewById(R.id.board_win_strike);
@@ -68,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void resetGame() {
-        this.activePlayer = X_PLAYER;
+        this.activePlayer = PLAYER_X;
         this.movesCounter = 0;
         Arrays.fill(this.gameState, EMPTY);
         for (int i = 0; i < this.MAX_MOVES; i++) {
@@ -86,21 +102,21 @@ public class MainActivity extends AppCompatActivity {
     private void playerTurn(View view) {
         if (this.isGameActive) {
             ImageView currentBoardCellImage = (ImageView) view;
-            Integer tappedCellNumber = Integer.parseInt(currentBoardCellImage.getTag().toString());
+            Integer currentBoardCellNumber = Integer.parseInt(currentBoardCellImage.getTag().toString());
 
-            if (this.gameState[tappedCellNumber] == EMPTY) {
+            if (Objects.equals(this.gameState[currentBoardCellNumber], EMPTY)) {
                 this.movesCounter++;
 
-                if (Objects.equals(this.activePlayer, O_PLAYER)) {
-                    currentBoardCellImage.setImageResource(R.drawable.o);
-                    this.gameState[tappedCellNumber] = BLUE;
-                    this.activePlayer = X_PLAYER;
-                    this.playerMessage.setImageResource(R.drawable.xplay);
-                } else {
+                if (Objects.equals(this.activePlayer, PLAYER_X)) {
                     currentBoardCellImage.setImageResource(R.drawable.x);
-                    this.gameState[tappedCellNumber] = RED;
-                    this.activePlayer = O_PLAYER;
+                    this.gameState[currentBoardCellNumber] = RED;
+                    this.activePlayer = PLAYER_O;
                     this.playerMessage.setImageResource(R.drawable.oplay);
+                } else {
+                    currentBoardCellImage.setImageResource(R.drawable.o);
+                    this.gameState[currentBoardCellNumber] = BLUE;
+                    this.activePlayer = PLAYER_X;
+                    this.playerMessage.setImageResource(R.drawable.xplay);
                 }
 
                 checkWinSituation();
@@ -114,18 +130,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkWinSituation() {
-        for (int i = 0; i < this.winPositions.length; i++) {
-            if (!Objects.equals(this.gameState[this.winPositions[i][0]], EMPTY) &&
-                    Objects.equals(this.gameState[this.winPositions[i][0]], this.gameState[this.winPositions[i][1]]) &&
-                    Objects.equals(this.gameState[this.winPositions[i][1]], this.gameState[this.winPositions[i][2]])) {
+        for (int i = 0; i < this.winSituationsOnBoard.length; i++) {
+            if ((!Objects.equals(this.gameState[this.winSituationsOnBoard[i][0]], EMPTY)) &&
+                (Objects.equals(this.gameState[this.winSituationsOnBoard[i][0]],
+                                this.gameState[this.winSituationsOnBoard[i][1]])) &&
+                (Objects.equals(this.gameState[this.winSituationsOnBoard[i][1]],
+                                this.gameState[this.winSituationsOnBoard[i][2]]))) {
 
-                this.winStrike.setImageResource(this.winsSituations[i]);
+                this.winStrike.setImageResource(this.winsSituationsImages[i]);
                 this.winStrike.setVisibility(View.VISIBLE);
 
-                if (Objects.equals(this.gameState[this.winPositions[i][0]], BLUE)) {
-                    this.playerMessage.setImageResource(R.drawable.owin);
-                } else {
+                if (Objects.equals(this.gameState[this.winSituationsOnBoard[i][0]], RED)) {
                     this.playerMessage.setImageResource(R.drawable.xwin);
+                } else {
+                    this.playerMessage.setImageResource(R.drawable.owin);
                 }
 
                 endGame();
